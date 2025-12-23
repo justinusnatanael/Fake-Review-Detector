@@ -1,0 +1,42 @@
+.hero{
+  padding: 18px 18px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: linear-gradient(135deg, rgba(108,92,231,0.25), rgba(0,0,0,0));
+  margin-bottom: 14px;
+}
+.hero-title{
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+.hero-subtitle{
+  opacity: 0.85;
+  margin-top: 6px;
+}
+.card{
+  border-radius: 16px;
+  padding: 14px 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+}
+.result-row{
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+.badge{
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  border: 1px solid rgba(255,255,255,0.14);
+}
+.badge-fake{
+  background: rgba(255, 71, 87, 0.18);
+  color: #ffb3bb;
+}
+.badge-real{
+  background: rgba(46, 213, 115, 0.16);
+  color: #b8f5cf;
+}
