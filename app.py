@@ -5,8 +5,11 @@ from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import pandas as pd
 from datetime import datetime
 
-MODEL_DIR = "indobert_fake_review_model"
+MODEL_DIR = "JustinusNatanael/indobert-fake-review"
 MAX_LEN = 128
+
+tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
+model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
 
 # ---------- Page config ----------
 st.set_page_config(
@@ -163,4 +166,5 @@ with tab_about:
         "Aplikasi ini memuat model IndoBERT hasil fine-tuning dan melakukan inference di CPU/GPU untuk klasifikasi Fake/Real."
     )
     st.write("Untuk tampilan, app memakai theming (config.toml) dan CSS sederhana. [web:21][web:33]")
+
 
