@@ -145,8 +145,13 @@ with tab_pred:
         with col_r1:
             rating = st.slider("Rating bintang", 1, 5, 5)
         with col_r2:
-            helpful = st.checkbox("Review ini membantu?", value=True)
-            st.caption(f"{st.session_state.helpful_count} review di sesi ini ditandai membantu.")
+            helpful_count_input = st.number_input(
+            "Berapa orang terbantu oleh review ini?",
+            min_value=0,
+            step=1,
+            value=0,
+            help="Contoh: di Tokopedia tertulis '12 orang merasa ulasan ini membantu'."
+            )
 
         c1, c2 = st.columns([1, 1])
         with c1:
@@ -235,3 +240,4 @@ with tab_about:
     st.write(
         "Tampilan menggunakan theming (config.toml) dan CSS sederhana untuk memberikan pengalaman pengguna yang lebih nyaman."
     )
+
