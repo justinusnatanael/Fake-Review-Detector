@@ -4,12 +4,11 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import pandas as pd
 from datetime import datetime
+import re
 
+# ---------- Konfigurasi model ----------
 MODEL_DIR = "JustinusNatanael/indobert-fake-review"
 MAX_LEN = 128
-
-tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
-model = AutoModelForSequenceClassification.from_pretrained(MODEL_DIR)
 
 # ---------- Page config ----------
 st.set_page_config(
@@ -23,7 +22,6 @@ def load_css(path: str):
     with open(path, "r", encoding="utf-8") as f:
         st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
-# Buat file assets/style.css (contoh ada di bawah)
 load_css("assets/style.css")
 
 # ---------- Model loader ----------
@@ -48,11 +46,38 @@ def predict(text: str):
     with torch.no_grad():
         logits = model(**inputs).logits
         probs = F.softmax(logits, dim=1).cpu().numpy()[0]  # [p0, p1]
-    # Asumsi: label 0=Real, 1=Fake (sesuai app kamu sebelumnya)
+    # Asumsi: 0 = Real, 1 = Fake
     p_real, p_fake = float(probs[0]), float(probs[1])
     pred = "Fake" if p_fake >= p_real else "Real"
     conf = max(p_real, p_fake)
     return pred, p_real, p_fake, conf
+
+def generate_reasoning(text, pred, p_real, p_fake):
+    text_l = text.lower()
+    reasons = []
+
+    if pred == "Fake":
+        if any(w in text_l for w in ["sangat puas", "puas sekali", "luar biasa", "perfect", "mantap sekali"]):
+            reasons.append("Terlalu banyak kata positif yang berlebihan.")
+        if re.search(r"\b(bagus){2,}\b", text_l) or re.search(r"\b(murah){2,}\b", text_l):
+            reasons.append("Ada kata yang diulang-ulang seperti iklan.")
+        if len(text.split()) < 8:
+            reasons.append("Review sangat pendek sehingga terkesan tidak informatif.")
+    else:  # Real
+        if any(w in text_l for w in ["tapi", "namun", "minus", "kekurangan"]):
+            reasons.append("Review berisi kelebihan dan kekurangan secara seimbang.")
+        if 15 <= len(text.split()) <= 80:
+            reasons.append("Panjang review wajar dan cukup detail.")
+        if not re.search(r"(sangat|banget|sekali){2,}", text_l):
+            reasons.append("Tidak ada pola pujian berulang yang berlebihan.")
+
+    if not reasons:
+        if pred == "Fake":
+            reasons.append("Pola kalimat mirip promosi sehingga terdeteksi sebagai Fake.")
+        else:
+            reasons.append("Pola kalimat mirip review pengguna nyata sehingga terdeteksi sebagai Real.")
+
+    return " ".join(reasons)
 
 def badge(label: str):
     cls = "badge-fake" if label == "Fake" else "badge-real"
@@ -65,8 +90,14 @@ if "history" not in st.session_state:
 # ---------- Sidebar ----------
 with st.sidebar:
     st.markdown("## Pengaturan")
-    threshold = st.slider("Ambang Fake (threshold p_fake)", 0.50, 0.95, 0.50, 0.01)
-    st.caption("Jika p_fake ≥ threshold → Fake.")
+
+    threshold = st.slider(
+        "Seberapa ketat pendeteksi Fake?",
+        0.50, 0.95, 0.50, 0.01,
+        help="Jika nilai keyakinan Fake di atas batas ini, review akan dianggap Fake."
+    )
+
+    st.caption("Jika keyakinan Fake ≥ batas di atas, review diklasifikasikan sebagai Fake.")
     st.divider()
     st.markdown("### Tips input")
     st.write("- Tulis minimal 5–10 kata.")
@@ -81,7 +112,9 @@ st.markdown(
     <div class="hero">
       <div>
         <div class="hero-title">Deteksi Fake Review (IndoBERT)</div>
-        <div class="hero-subtitle">Masukkan review produk (Bahasa Indonesia) untuk melihat prediksi Real/Fake beserta confidence.</div>
+        <div class="hero-subtitle">
+        Masukkan review produk (Bahasa Indonesia) untuk melihat prediksi Real/Fake beserta tingkat keyakinan.
+        </div>
       </div>
     </div>
     """,
@@ -90,6 +123,7 @@ st.markdown(
 
 tab_pred, tab_history, tab_about = st.tabs(["Prediksi", "Histori", "Tentang"])
 
+# ---------- Tab Prediksi ----------
 with tab_pred:
     left, right = st.columns([1.2, 1])
 
@@ -100,6 +134,14 @@ with tab_pred:
             height=180,
             placeholder="Contoh: Barang cepat sampai, packing rapi, tapi kualitas kurang sesuai deskripsi..."
         )
+
+        # Informasi tambahan
+        st.markdown("#### Informasi tambahan (opsional)")
+        col_r1, col_r2 = st.columns(2)
+        with col_r1:
+            rating = st.slider("Rating bintang", 1, 5, 5)
+        with col_r2:
+            helpful = st.checkbox("Review ini membantu?", value=True)
 
         c1, c2 = st.columns([1, 1])
         with c1:
@@ -120,17 +162,25 @@ with tab_pred:
                 # apply threshold from sidebar
                 pred = "Fake" if p_fake >= threshold else "Real"
 
+                pct_real = p_real * 100
+                pct_fake = p_fake * 100
+                pct_conf = conf * 100
+
+                reason = generate_reasoning(text, pred, p_real, p_fake)
+
                 st.markdown(
                     f"<div class='result-row'>Prediksi: {badge(pred)}</div>",
                     unsafe_allow_html=True
                 )
 
                 m1, m2, m3 = st.columns(3)
-                m1.metric("Prob Real", f"{p_real:.4f}")
-                m2.metric("Prob Fake", f"{p_fake:.4f}")
-                m3.metric("Confidence", f"{conf:.4f}")
+                m1.metric("Prob Real", f"{pct_real:.2f}%")
+                m2.metric("Prob Fake", f"{pct_fake:.2f}%")
+                m3.metric("Kepercayaan", f"{pct_conf:.2f}%")
 
                 st.progress(min(conf, 1.0))
+
+                st.markdown(f"**Alasan singkat:** {reason}")
 
                 # save history
                 st.session_state.history.insert(
@@ -138,20 +188,24 @@ with tab_pred:
                     {
                         "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "pred": pred,
-                        "p_real": round(p_real, 4),
-                        "p_fake": round(p_fake, 4),
-                        "text": text[:200] + ("..." if len(text) > 200 else "")
+                        "p_real(%)": round(p_real * 100, 2),
+                        "p_fake(%)": round(p_fake * 100, 2),
+                        "rating": rating,
+                        "helpful": helpful,
+                        "text": text[:200] + ("..." if len(text) > 200 else ""),
+                        "reason": reason,
                     }
                 )
 
                 if pred0 != pred:
-                    st.info("Prediksi berubah karena threshold (ambang) di sidebar.")
+                    st.info("Prediksi berubah karena batas keketatan (slider di kiri).")
 
         else:
             st.caption("Klik tombol Prediksi untuk melihat hasil.")
 
         st.markdown("</div>", unsafe_allow_html=True)
 
+# ---------- Tab History ----------
 with tab_history:
     st.markdown("### Histori prediksi (session ini)")
     if len(st.session_state.history) == 0:
@@ -160,11 +214,12 @@ with tab_history:
         df = pd.DataFrame(st.session_state.history)
         st.dataframe(df, use_container_width=True, hide_index=True)
 
+# ---------- Tab About ----------
 with tab_about:
     st.markdown("### Tentang aplikasi")
     st.write(
         "Aplikasi ini memuat model IndoBERT hasil fine-tuning dan melakukan inference di CPU/GPU untuk klasifikasi Fake/Real."
     )
-    st.write("Untuk tampilan, app memakai theming (config.toml) dan CSS sederhana. [web:21][web:33]")
-
-
+    st.write(
+        "Tampilan menggunakan theming (config.toml) dan CSS sederhana untuk memberikan pengalaman pengguna yang lebih nyaman."
+    )
