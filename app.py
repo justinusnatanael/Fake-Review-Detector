@@ -86,18 +86,21 @@ def badge(label: str):
 # ---------- Session state ----------
 if "history" not in st.session_state:
     st.session_state.history = []
+if "helpful_count" not in st.session_state:
+    st.session_state.helpful_count = 0
 
 # ---------- Sidebar ----------
 with st.sidebar:
     st.markdown("## Pengaturan")
 
-    threshold = st.slider(
-        "Seberapa ketat pendeteksi Fake?",
-        0.50, 0.95, 0.50, 0.01,
-        help="Jika nilai keyakinan Fake di atas batas ini, review akan dianggap Fake."
+    threshold_pct = st.slider(
+        "Batas minimal probabilitas Fake (%)",
+        50.0, 95.0, 50.0, 1.0,
+        help="Jika Prob Fake di atas persentase ini, review akan dianggap Fake."
     )
+    threshold = threshold_pct / 100.0
 
-    st.caption("Jika keyakinan Fake ≥ batas di atas, review diklasifikasikan sebagai Fake.")
+    st.caption("Jika Prob Fake ≥ batas di atas, review diklasifikasikan sebagai Fake.")
     st.divider()
     st.markdown("### Tips input")
     st.write("- Tulis minimal 5–10 kata.")
@@ -105,6 +108,7 @@ with st.sidebar:
     st.divider()
     if st.button("Hapus histori"):
         st.session_state.history = []
+        st.session_state.helpful_count = 0
 
 # ---------- Header ----------
 st.markdown(
@@ -142,6 +146,7 @@ with tab_pred:
             rating = st.slider("Rating bintang", 1, 5, 5)
         with col_r2:
             helpful = st.checkbox("Review ini membantu?", value=True)
+            st.caption(f"{st.session_state.helpful_count} review di sesi ini ditandai membantu.")
 
         c1, c2 = st.columns([1, 1])
         with c1:
@@ -180,7 +185,11 @@ with tab_pred:
 
                 st.progress(min(conf, 1.0))
 
-                st.markdown(f"**Alasan singkat:** {reason}")
+                st.markdown(f"**Reason:** {reason}")
+
+                # update helpful counter
+                if helpful:
+                    st.session_state.helpful_count += 1
 
                 # save history
                 st.session_state.history.insert(
@@ -198,7 +207,7 @@ with tab_pred:
                 )
 
                 if pred0 != pred:
-                    st.info("Prediksi berubah karena batas keketatan (slider di kiri).")
+                    st.info("Prediksi berubah karena batas probabilitas Fake yang kamu atur di kiri.")
 
         else:
             st.caption("Klik tombol Prediksi untuk melihat hasil.")
@@ -211,6 +220,9 @@ with tab_history:
     if len(st.session_state.history) == 0:
         st.caption("Belum ada histori.")
     else:
+        st.markdown(
+            f"Total review yang ditandai **membantu** di sesi ini: {st.session_state.helpful_count}"
+        )
         df = pd.DataFrame(st.session_state.history)
         st.dataframe(df, use_container_width=True, hide_index=True)
 
