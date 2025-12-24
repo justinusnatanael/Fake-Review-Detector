@@ -86,8 +86,6 @@ def badge(label: str):
 # ---------- Session state ----------
 if "history" not in st.session_state:
     st.session_state.history = []
-if "helpful_count" not in st.session_state:
-    st.session_state.helpful_count = 0
 
 # ---------- Sidebar ----------
 with st.sidebar:
@@ -108,7 +106,6 @@ with st.sidebar:
     st.divider()
     if st.button("Hapus histori"):
         st.session_state.history = []
-        st.session_state.helpful_count = 0
 
 # ---------- Header ----------
 st.markdown(
@@ -125,7 +122,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_pred, tab_history, tab_about = st.tabs(["Prediksi", "Histori", "Tentang"])
+# Tabs: Prediksi, Histori, Indikator, Tentang
+tab_pred, tab_history, tab_rules, tab_about = st.tabs(
+    ["Prediksi", "Histori", "Indikator Fake Review", "Tentang"]
+)
 
 # ---------- Tab Prediksi ----------
 with tab_pred:
@@ -146,11 +146,11 @@ with tab_pred:
             rating = st.slider("Rating bintang", 1, 5, 5)
         with col_r2:
             helpful_count_input = st.number_input(
-            "Berapa orang terbantu oleh review ini?",
-            min_value=0,
-            step=1,
-            value=0,
-            help="Contoh: di Tokopedia tertulis '12 orang merasa ulasan ini membantu'."
+                "Berapa orang terbantu oleh review ini?",
+                min_value=0,
+                step=1,
+                value=0,
+                help="Contoh: di Tokopedia tertulis '12 orang merasa ulasan ini membantu'."
             )
 
         c1, c2 = st.columns([1, 1])
@@ -191,6 +191,9 @@ with tab_pred:
                 st.progress(min(conf, 1.0))
 
                 st.markdown(f"**Reason:** {reason}")
+                st.markdown(
+                    f"**Info tambahan:** {helpful_count_input} orang merasa review ini membantu (input pengguna)."
+                )
 
                 # save history
                 st.session_state.history.insert(
@@ -221,19 +224,104 @@ with tab_history:
     if len(st.session_state.history) == 0:
         st.caption("Belum ada histori.")
     else:
-        st.markdown(
-            f"Total review yang ditandai **membantu** di sesi ini: {st.session_state.helpful_count}"
+        st.caption(
+            "Kolom 'helpful_count' menunjukkan berapa orang yang menurut pengguna terbantu "
+            "oleh review tersebut (mirip informasi jempol di e-commerce)."
         )
         df = pd.DataFrame(st.session_state.history)
         st.dataframe(df, use_container_width=True, hide_index=True)
 
-# ---------- Tab About ----------
+# ---------- Tab Indikator Fake Review ----------
+with tab_rules:
+    st.markdown("### Indikator Fake Review (Ringkas)")
+    st.write(
+        "Bagian ini merangkum ciri-ciri umum ulasan yang cenderung Fake dan yang cenderung Real, "
+        "berdasarkan aturan linguistik dan pola isi review."
+    )
+
+    st.markdown("#### 1. Emosi & Sentimen Bahasa")
+    st.markdown(
+        "- **Cenderung Fake**: Sentimen ekstrem (terlalu positif / terlalu negatif) tanpa alasan jelas, "
+        "banyak kata hiperbola seperti *luar biasa, terbaik di dunia, parah banget, hancur total*.\n"
+        "- **Cenderung Real**: Sentimen lebih seimbang, biasanya ada kelebihan **dan** kekurangan sekaligus."
+    )
+    st.markdown("**Contoh Fake:** *\"Produk ini SEMPURNA banget!!! Terbaik di dunia, wajib beli pokoknya!!!\"*")
+    st.markdown("**Contoh Real:** *\"Secara umum bagus, bahan cukup tebal dan nyaman, tapi jahitannya di bagian "
+                "lengan agak kurang rapi.\"*")
+
+    st.markdown("#### 2. Emoji & Tanda Baca")
+    st.markdown(
+        "- **Cenderung Fake**: Emoji berlebihan atau berulang (😊😊😊🔥🔥🔥💯💯💯), tanda seru/kata kapital berlebihan "
+        "seperti *\"PRODUK INI WAJIB BELI!!!\"*.\n"
+        "- **Cenderung Real**: Emoji sedikit atau tidak ada, tanda baca dan huruf kapital digunakan secara wajar."
+    )
+    st.markdown("**Contoh Fake:** *\"Keren banget barangnya 😊😊😊🔥🔥🔥💯💯💯\"*")
+    st.markdown("**Contoh Real:** *\"Packing rapi, pengiriman cepat 🙂 barang sesuai foto.\"*")
+
+    st.markdown("#### 3. Panjang & Struktur Kalimat")
+    st.markdown(
+        "- **Cenderung Fake**: Review sangat pendek dan generik (*\"Bagus banget\", \"Recommended\"*) atau sangat "
+        "panjang tapi isinya seperti promosi dan tidak fokus pada pengalaman nyata.\n"
+        "- **Cenderung Real**: Panjang wajar, kalimat mengalir alami dan fokus pada pengalaman pribadi."
+    )
+    st.markdown("**Contoh Fake (pendek):** *\"Recommended banget, pokoknya mantap\"*")
+    st.markdown("**Contoh Real:** *\"Ukuran L pas di badan (tinggi 170cm, 65kg). Setelah dicuci 2x warnanya belum pudar, "
+                "tapi resleting agak seret.\"*")
+
+    st.markdown("#### 4. Detail Konten & Bahasa Promosi")
+    st.markdown(
+        "- **Cenderung Fake**: Jarang menyebut detail produk (warna, ukuran, kondisi pemakaian), banyak kata "
+        "marketing seperti *wajib beli, best seller, dijamin puas*.\n"
+        "- **Cenderung Real**: Menyebut detail konkret (pengiriman, kualitas material, daya tahan) dengan bahasa "
+        "sehari-hari yang tidak terkesan iklan."
+    )
+    st.markdown("**Contoh Fake:** *\"Best seller banget, kualitas premium, dijamin puas pokoknya!\"*")
+    st.markdown("**Contoh Real:** *\"Kardus sedikit penyok tapi isi aman. Suara kipas cukup halus, dipakai 3 jam terus "
+                "belum panas. Kabelnya agak pendek jadi perlu colokan dekat meja.\"*")
+
+    st.markdown("#### 5. Contoh output model IndoBERT")
+    st.write(
+        "Berikut dua contoh bagaimana indikator di atas tercermin pada probabilitas model:"
+    )
+    st.markdown(
+        "- **Contoh Real**: *\"Kardus sedikit penyok tapi isi aman. Suara kipas cukup halus, dipakai 3 jam terus "
+        "belum panas. Kabelnya agak pendek jadi perlu colokan dekat meja.\"*"
+    )
+    st.markdown(
+        "  - Prediksi model: **Real**, Prob Real ≈ **99.93%**, Prob Fake ≈ **0.07%**. "
+        "Model sangat yakin review ini Real karena berisi kelebihan dan kekurangan yang seimbang, "
+        "detail pengalaman, dan tidak ada bahasa promosi berlebihan."
+    )
+    st.markdown(
+        "- **Contoh Fake**: *\"Best seller banget, kualitas premium, dijamin puas pokoknya!\"*"
+    )
+    st.markdown(
+        "  - Prediksi model: **Fake**, Prob Real ≈ **1.81%**, Prob Fake ≈ **98.19%**. "
+        "Model sangat yakin review ini Fake karena pola kalimat mirip iklan, banyak hiperbola, "
+        "dan tidak ada detail spesifik mengenai pengalaman penggunaan."
+    )
+
+# ---------- Tab Tentang ----------
 with tab_about:
     st.markdown("### Tentang aplikasi")
     st.write(
-        "Aplikasi ini memuat model IndoBERT hasil fine-tuning dan melakukan inference di CPU/GPU untuk klasifikasi Fake/Real."
+        "Aplikasi ini merupakan proyek skripsi mahasiswa Program Studi Data Science "
+        "yang berfokus pada pendeteksian fake review di e-commerce Indonesia."
     )
     st.write(
-        "Tampilan menggunakan theming (config.toml) dan CSS sederhana untuk memberikan pengalaman pengguna yang lebih nyaman."
+        "Model utama yang digunakan adalah IndoBERT yang telah di-fine-tune untuk klasifikasi "
+        "review Real/Fake. Data dikumpulkan dengan web scraping ulasan produk dari Tokopedia dan "
+        "Shopee, kemudian melalui proses pembersihan teks, pelabelan (gold dan pseudo label), "
+        "serta pembagian data latih dan uji."
     )
-
+    st.write(
+        "Antarmuka ini dibangun dengan Streamlit dan memuat model IndoBERT yang tersimpan di "
+        "Hugging Face Hub, sehingga pengguna dapat memasukkan review dalam Bahasa Indonesia dan "
+        "melihat probabilitas Real/Fake, tingkat kepercayaan model, serta reasoning sederhana "
+        "yang menjelaskan pola bahasa pada review tersebut."
+    )
+    st.write(
+        "Aplikasi ini ditujukan sebagai bukti konsep bahwa pendekatan deep learning berbasis "
+        "Transformer dapat membantu mengidentifikasi potensi fake review dan mendukung "
+        "pengambilan keputusan yang lebih informatif bagi pengguna e-commerce."
+    )
