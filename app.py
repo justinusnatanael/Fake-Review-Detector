@@ -192,10 +192,6 @@ with tab_pred:
 
                 st.markdown(f"**Reason:** {reason}")
 
-                # update helpful counter
-                if helpful:
-                    st.session_state.helpful_count += 1
-
                 # save history
                 st.session_state.history.insert(
                     0,
@@ -205,7 +201,7 @@ with tab_pred:
                         "p_real(%)": round(p_real * 100, 2),
                         "p_fake(%)": round(p_fake * 100, 2),
                         "rating": rating,
-                        "helpful": helpful,
+                        "helpful_count": int(helpful_count_input),
                         "text": text[:200] + ("..." if len(text) > 200 else ""),
                         "reason": reason,
                     }
