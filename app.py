@@ -112,7 +112,7 @@ st.markdown(
     """
     <div class="hero">
       <div>
-        <div class="hero-title">Deteksi Fake Review (IndoBERT)</div>
+        <div class="hero-title">Deteksi Fake Review </div>
         <div class="hero-subtitle">
         Masukkan review produk (Bahasa Indonesia) untuk melihat prediksi Real/Fake beserta tingkat keyakinan.
         </div>
@@ -325,3 +325,4 @@ with tab_about:
         "Transformer dapat membantu mengidentifikasi potensi fake review dan mendukung "
         "pengambilan keputusan yang lebih informatif bagi pengguna e-commerce."
     )
+
