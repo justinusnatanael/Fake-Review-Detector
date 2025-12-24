@@ -112,7 +112,7 @@ st.markdown(
     """
     <div class="hero">
       <div>
-        <div class="hero-title">Deteksi Fake Review </div>
+        <div class="hero-title">Deteksi Fake Review</div>
         <div class="hero-subtitle">
         Masukkan review produk (Bahasa Indonesia) untuk melihat prediksi Real/Fake beserta tingkat keyakinan.
         </div>
@@ -303,26 +303,46 @@ with tab_rules:
 
 # ---------- Tab Tentang ----------
 with tab_about:
-    st.markdown("### Tentang aplikasi")
-    st.write(
-        "Aplikasi ini merupakan proyek skripsi mahasiswa Program Studi Data Science "
-        "yang berfokus pada pendeteksian fake review di e-commerce Indonesia."
-    )
-    st.write(
-        "Model utama yang digunakan adalah IndoBERT yang telah di-fine-tune untuk klasifikasi "
-        "review Real/Fake. Data dikumpulkan dengan web scraping ulasan produk dari Tokopedia dan "
-        "Shopee, kemudian melalui proses pembersihan teks, pelabelan (gold dan pseudo label), "
-        "serta pembagian data latih dan uji."
-    )
-    st.write(
-        "Antarmuka ini dibangun dengan Streamlit dan memuat model IndoBERT yang tersimpan di "
-        "Hugging Face Hub, sehingga pengguna dapat memasukkan review dalam Bahasa Indonesia dan "
-        "melihat probabilitas Real/Fake, tingkat kepercayaan model, serta reasoning sederhana "
-        "yang menjelaskan pola bahasa pada review tersebut."
-    )
-    st.write(
-        "Aplikasi ini ditujukan sebagai bukti konsep bahwa pendekatan deep learning berbasis "
-        "Transformer dapat membantu mengidentifikasi potensi fake review dan mendukung "
-        "pengambilan keputusan yang lebih informatif bagi pengguna e-commerce."
-    )
+    st.markdown("### About Us")
 
+    with st.expander("Lihat detail", expanded=False):
+        st.markdown(
+            """
+            Kami adalah **Justinus Natanael Bensohur (2602094004)** dan **Maxcell Rimba (2602110046)**,  
+            mahasiswa **Data Science, School of Computer Science, Universitas Bina Nusantara**.  
+            Aplikasi ini merupakan bagian dari tugas akhir kami yang berjudul:  
+            **“KLASIFIKASI FAKE REVIEW DENGAN DEEP LEARNING UNTUK ANALISIS ULASAN PRODUK DI TOKOPEDIA DAN SHOPEE”.**
+
+            **Tujuan penelitian**
+            - Mengklasifikasikan ulasan produk di e-commerce menjadi review **asli** dan **fake** menggunakan metode deep learning.
+            - Membantu konsumen agar lebih mudah mengenali ulasan yang mencurigakan sehingga keputusan belanja menjadi lebih aman.
+            - Memberikan insight bagi pelaku e-commerce terkait kualitas ulasan di platform mereka.
+
+            **Data dan pengambilan data**
+            - Sumber data: ulasan produk dari **Tokopedia dan Shopee** pada beberapa kategori produk.
+            - Teknik pengambilan: *web scraping* menggunakan kombinasi Selenium dan BeautifulSoup
+              untuk mengambil teks review dan atribut pendukung (rating, helpful, dll.).
+            - Data kemudian dibersihkan dari duplikasi, simbol tidak penting, dan review yang terlalu pendek
+              sebelum digunakan untuk pelatihan model.
+
+            **Model yang digunakan**
+            - Model utama adalah model **deep learning berbasis transformer (IndoBERT / BERT-family)** 
+              untuk klasifikasi fake vs real review.
+            - Model dievaluasi menggunakan metrik **akurasi, precision, recall, dan F1-score**.
+
+            **Hugging Face & deployment model**
+            - Model teks dibangun dan/atau di-*fine-tune* menggunakan ekosistem **Hugging Face Transformers**,
+              sehingga mudah di-*load* dan diintegrasikan ke dalam aplikasi.
+            - Menggunakan `AutoTokenizer` dan `AutoModelForSequenceClassification` untuk melakukan inferensi
+              terhadap setiap ulasan yang dimasukkan pengguna.
+
+            **Tentang aplikasi Streamlit ini**
+            - Pengguna dapat:
+              - Memasukkan teks ulasan produk secara bebas.
+              - Melihat prediksi apakah ulasan tersebut terdeteksi sebagai **fake** atau **real**, beserta probabilitasnya.
+            - Aplikasi dibangun dengan **Streamlit** agar dapat diakses dengan mudah melalui browser.
+
+            Terima kasih telah mencoba aplikasi kami dan memberikan feedback untuk pengembangan selanjutnya! 🙏
+            """,
+            unsafe_allow_html=True,
+        )
