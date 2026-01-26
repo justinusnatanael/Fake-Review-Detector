@@ -1,0 +1,2 @@
+gold_rows_evaluated,accuracy,f1_fake_pos,macro_f1,weighted_f1,cm_real_real,cm_real_fake,cm_fake_real,cm_fake_fake
+1965,0.739440203562341,0.23353293413173654,0.5382870066121589,0.7102830709280817,1375,162,350,78
