@@ -311,7 +311,7 @@ with tab_about:
             Kami adalah **Justinus Natanael Bensohur (2602094004)** dan **Maxcell Rimba (2602110046)**,  
             mahasiswa **Data Science, School of Computer Science, Universitas Bina Nusantara**.  
             Aplikasi ini merupakan bagian dari tugas akhir kami yang berjudul:  
-            **“KLASIFIKASI FAKE REVIEW DENGAN DEEP LEARNING UNTUK ANALISIS ULASAN PRODUK DI TOKOPEDIA DAN SHOPEE”.**
+            **“KLASIFIKASI FAKE REVIEW DENGAN DEEP LEARNING UNTUK ANALISIS ULASAN PRODUK DI TOKOPEDIA”.**
 
             **Tujuan penelitian**
             - Mengklasifikasikan ulasan produk di e-commerce menjadi review **asli** dan **fake** menggunakan metode deep learning.
@@ -319,7 +319,7 @@ with tab_about:
             - Memberikan insight bagi pelaku e-commerce terkait kualitas ulasan di platform mereka.
 
             **Data dan pengambilan data**
-            - Sumber data: ulasan produk dari **Tokopedia dan Shopee** pada beberapa kategori produk.
+            - Sumber data: ulasan produk dari **Tokopedia** pada beberapa kategori produk.
             - Teknik pengambilan: *web scraping* menggunakan kombinasi Selenium dan BeautifulSoup
               untuk mengambil teks review dan atribut pendukung (rating, helpful, dll.).
             - Data kemudian dibersihkan dari duplikasi, simbol tidak penting, dan review yang terlalu pendek
@@ -346,3 +346,4 @@ with tab_about:
             """,
             unsafe_allow_html=True,
         )
+
