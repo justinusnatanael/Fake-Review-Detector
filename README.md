@@ -1,4 +1,3 @@
-# Fake-Review-Detector
 # Fake Review Detection for Tokopedia Product Reviews Using Deep Learning
 ### Bachelor Thesis Project
 
