@@ -1,5 +1,5 @@
 # Fake Review Detection for Tokopedia Product Reviews Using Deep Learning
-### Bachelor Thesis Project
+### Thesis Project
 
 ## Overview
 This project was developed as part of my bachelor's thesis in the Data Science Program at Bina Nusantara University. The research focuses on detecting fake product reviews in Indonesian e-commerce platforms using deep learning techniques and text classification methods.
